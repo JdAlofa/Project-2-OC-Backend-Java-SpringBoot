@@ -50,7 +50,7 @@ public class UserService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
-                new ArrayList<>() // Or user.getAuthorities() if you have roles/authorities
+                new ArrayList<>()
         );
     }
 }
