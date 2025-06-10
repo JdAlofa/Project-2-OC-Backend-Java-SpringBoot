@@ -40,7 +40,7 @@ public class SpringSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(SWAGGER_WHITELIST).permitAll() // Permit Swagger paths
-                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() // Your existing public paths
+                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() 
                         .anyRequest().authenticated()) // All other requests require authentication
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .build();
