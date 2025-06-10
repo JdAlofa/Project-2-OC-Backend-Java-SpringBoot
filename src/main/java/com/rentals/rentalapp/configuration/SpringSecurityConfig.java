@@ -21,17 +21,37 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfig {
-    
+
     @Value("${jwt.secret}")
     private String jwtKey;
 
     private static final String[] SWAGGER_WHITELIST = {
-        "/swagger-ui/**", // For all Swagger UI static assets
-        "/v3/api-docs/**" // For the OpenAPI v3 specification
+            "/swagger-ui/**", // For all Swagger UI static assets
+            "/v3/api-docs/**" // For the OpenAPI v3 specification
     };
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+        final String securitySchemeName = "bearerAuth";
+        return new OpenAPI()
+                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+                .components(
+                        new Components()
+                                .addSecuritySchemes(securitySchemeName,
+                                        new SecurityScheme()
+                                                .name(securitySchemeName)
+                                                .type(SecurityScheme.Type.HTTP)
+                                                .scheme("bearer")
+                                                .bearerFormat("JWT")));
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -40,7 +60,7 @@ public class SpringSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(SWAGGER_WHITELIST).permitAll() // Permit Swagger paths
-                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() 
+                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                         .anyRequest().authenticated()) // All other requests require authentication
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .build();
@@ -67,4 +87,5 @@ public class SpringSecurityConfig {
     public JwtEncoder jwtEncoder() {
         return new NimbusJwtEncoder(new ImmutableSecret<>(this.jwtKey.getBytes()));
     }
+
 }
